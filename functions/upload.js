@@ -9,9 +9,9 @@ const openai = new OpenAIApi(configuration);
 
 exports.handler = async (event) => {
   try {
-    console.log("イベント情報:", event); // デバッグ用: イベント情報のログ出力
+    console.log("イベント情報:", event);
 
-    const { body, isBase64Encoded } = event;
+    const { body } = event;
 
     if (!body) {
       console.error("エラー: ファイルがアップロードされていません");
@@ -21,14 +21,12 @@ exports.handler = async (event) => {
       };
     }
 
-    // ファイルデータをバイナリ形式に変換
     const fileBuffer = Buffer.from(body, 'base64');
 
-    // PDFからテキストを抽出
     const pdfData = await pdfParse(fileBuffer);
     const extractedText = pdfData.text;
 
-    console.log("PDFテキスト:", extractedText); // デバッグ用: PDFから抽出したテキスト
+    console.log("PDFテキスト:", extractedText);
 
     if (!extractedText || extractedText.trim() === '') {
       console.error("エラー: PDFからテキストを抽出できませんでした");
@@ -38,16 +36,15 @@ exports.handler = async (event) => {
       };
     }
 
-    // OpenAI APIで要約
     const prompt = `以下の文章を簡潔に要約してください:\n\n${extractedText}`;
     const openaiResponse = await openai.createCompletion({
-      model: 'gpt-3.5-turbo', // または 'gpt-4'
+      model: 'gpt-3.5-turbo',
       prompt: prompt,
       max_tokens: 1000,
       temperature: 0.2,
     });
 
-    console.log("OpenAIレスポンス:", openaiResponse.data); // デバッグ用: OpenAI APIからのレスポンス
+    console.log("OpenAIレスポンス:", openaiResponse.data);
 
     const summary = openaiResponse.data.choices[0]?.text?.trim();
 
@@ -59,14 +56,14 @@ exports.handler = async (event) => {
       };
     }
 
-    console.log("要約結果:", summary); // デバッグ用: 要約結果を出力
+    console.log("要約結果:", summary);
 
     return {
       statusCode: 200,
       body: JSON.stringify({ summary }),
     };
   } catch (error) {
-    console.error("エラー発生:", error); // デバッグ用: キャッチされたエラー
+    console.error("エラー発生:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: `エラーが発生しました: ${error.message}` }),
