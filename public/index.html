@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リース判定テスト</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff; /* 青色基調 */
+            color: #333;
+        }
+
+        header {
+            background-color: #4682b4; /* 青色 */
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4682b4;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type="file"] {
+            margin: 1rem 0;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #4682b4;
+            color: white;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #5a9bd4;
+        }
+
+        #result {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #e6f7ff;
+            border: 1px solid #b3d8ff;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>リース判定テスト</h1>
+    </header>
+    <main>
+        <h1>PDFファイルをアップロードしてください</h1>
+        <form id="uploadForm">
+            <input type="file" id="fileInput" accept=".pdf" required />
+            <button type="submit">アップロード</button>
+        </form>
+        <div id="result"></div>
+    </main>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        form.onsubmit = async (event) => {
+            event.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            document.getElementById('result').innerHTML = '処理中...';
+
+            const response = await fetch('/.netlify/functions/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (result.error) {
+                document.getElementById('result').innerHTML = `エラー: ${result.error}`;
+            } else {
+                document.getElementById('result').innerHTML = `
+                    <h3>要約結果:</h3>
+                    <p>${result.summary}</p>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>
