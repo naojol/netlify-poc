@@ -1,11 +1,10 @@
 const pdfParse = require('pdf-parse');
-const { Configuration, OpenAIApi } = require('openai');
+const OpenAI = require('openai');
 
 // OpenAI APIキーを設定
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // 環境変数からAPIキーを取得
 });
-const openai = new OpenAIApi(configuration);
 
 exports.handler = async (event) => {
   try {
@@ -37,16 +36,18 @@ exports.handler = async (event) => {
     }
 
     const prompt = `以下の文章を簡潔に要約してください:\n\n${extractedText}`;
-    const openaiResponse = await openai.createCompletion({
-      model: 'gpt-3.5-turbo',
-      prompt: prompt,
+    console.log("プロンプト:", prompt);
+
+    const openaiResponse = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo', // または 'gpt-4'
+      messages: [{ role: 'user', content: prompt }],
       max_tokens: 1000,
       temperature: 0.2,
     });
 
-    console.log("OpenAIレスポンス:", openaiResponse.data);
+    console.log("OpenAIレスポンス:", openaiResponse);
 
-    const summary = openaiResponse.data.choices[0]?.text?.trim();
+    const summary = openaiResponse.choices[0]?.message?.content?.trim();
 
     if (!summary) {
       console.error("エラー: 要約結果が生成されませんでした");
